@@ -9,8 +9,7 @@ fn main() {
 }
 
 fn part1(input: &str) -> usize {
-    let reports = parse_input(input);
-    reports
+    parse_input(input)
         .iter()
         .map(|report| is_safe(report))
         .filter(|report| *report)
@@ -29,8 +28,26 @@ fn is_safe(report: &Vec<i32>) -> bool {
     true
 }
 
-fn part2(input: &str) -> i32 {
-    0
+fn part2(input: &str) -> usize {
+    parse_input(input)
+        .iter()
+        .map(|report| is_safe2(report))
+        .filter(|report| *report)
+        .count()
+}
+
+fn is_safe2(report: &Vec<i32>) -> bool {
+    if is_safe(report) {
+        return true;
+    }
+    for index in 0..report.len() {
+        let mut report_without_index = report.clone();
+        report_without_index.remove(index);
+        if is_safe(&report_without_index) {
+            return true;
+        }
+    }
+    false
 }
 
 fn parse_input(input: &str) -> Vec<Vec<i32>> {
