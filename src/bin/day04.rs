@@ -9,26 +9,23 @@ fn main() {
 }
 
 fn part1(input: &str) -> usize {
-    let lines = input.lines().collect::<Vec<&str>>();
-    let height = lines.len();
-    let width = lines.iter().map(|l| l.len()).min().unwrap();
-    let mut count = 0;
-    for y in 0..height {
-        for x in 0..width {
-            count += find_xmas_at(&lines, x as i32, y as i32)
-        }
-    }
-    count
+    count_words(input, find_xmas_at)
 }
 
 fn part2(input: &str) -> usize {
+    count_words(input, find_x_mas_at)
+}
+
+fn count_words<F>(input: &str, count_at: F) -> usize
+    where F: Fn(&[&str], i32, i32) -> usize
+{
     let lines = input.lines().collect::<Vec<&str>>();
     let height = lines.len();
     let width = lines.iter().map(|l| l.len()).min().unwrap();
     let mut count = 0;
     for y in 0..height {
         for x in 0..width {
-            count += find_x_mas_at(&lines, x as i32, y as i32)
+            count += count_at(&lines, x as i32, y as i32)
         }
     }
     count
@@ -58,21 +55,26 @@ fn find_xmas_from(lines: &[&str], x: i32, y: i32, dx: i32, dy: i32) -> usize {
 }
 
 fn find_x_mas_at(lines: &[&str], x: i32, y: i32) -> usize {
-    if is_char(lines, x, y, 'A') {
-        if is_mas_at(lines, x, y, 1, 1) && is_mas_at(lines, x, y, 1, -1) {
-            return 1;
-        }
+    if is_char(lines, x, y, 'A') && is_mas_at(lines, x, y, 1, 1) && is_mas_at(lines, x, y, 1, -1) {
+        1
+    } else {
+        0
     }
-    0
 }
 
 fn is_mas_at(lines: &[&str], x: i32, y: i32, dx: i32, dy: i32) -> bool {
     is_char(lines, x + dx, y + dy, 'M') && is_char(lines, x - dx, y - dy, 'S')
-     || is_char(lines, x - dx, y - dy, 'M') && is_char(lines, x + dx, y + dy, 'S')
+        || is_char(lines, x - dx, y - dy, 'M') && is_char(lines, x + dx, y + dy, 'S')
 }
 
 fn is_char(lines: &[&str], x: i32, y: i32, ch: char) -> bool {
-    let line = usize::try_from(y);
-    let col = usize::try_from(x);
-    line.is_ok_and(|l| col.is_ok_and(|c| lines.get(l).map(|l| l.chars().nth(c)) == Some(Some(ch))))
+    char_at(lines, x, y) == Some(ch)
+}
+
+fn char_at(lines: &[&str], x: i32, y: i32) -> Option<char> {
+    let line_index = usize::try_from(y).ok()?;
+    let line = lines.get(line_index)?;
+    let char_index = usize::try_from(x).ok()?;
+    let char = line.chars().nth(char_index)?;
+    Some(char)
 }
