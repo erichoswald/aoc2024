@@ -20,7 +20,7 @@ fn part1(sample: &str) -> usize {
             for a1 in &nodes {
                 if a0 != a1 {
                     let dist = a0.distance_to(&a1);
-                    let candidate = a1.add(dist);
+                    let candidate = a1.add(&dist);
                     if grid.contains(&candidate) {
                         anti_nodes.insert(candidate);
                     }
@@ -32,14 +32,29 @@ fn part1(sample: &str) -> usize {
 }
 
 fn part2(sample: &str) -> usize {
-    0
+    let grid = Grid::parse_from(sample);
+    let mut anti_nodes = HashSet::new();
+    let frequencies = grid.cell_values('.');
+    for frequency in frequencies {
+        let nodes = grid.cell_coords_with(frequency);
+        for a0 in &nodes {
+            for a1 in &nodes {
+                if a0 != a1 {
+                    let dist = a0.distance_to(&a1);
+                    let mut candidate = GridCoord::at(a1);
+                    while grid.contains(&candidate) {
+                        anti_nodes.insert(GridCoord::at(&candidate));
+                        candidate = candidate.add(&dist);
+                    }
+                }
+            }
+        }
+    }
+    anti_nodes.len()
 }
 
 #[derive(Eq, PartialEq, Hash, Debug)]
 struct GridCoord(usize, usize);
-
-#[derive(Eq, PartialEq, Hash, Debug)]
-struct GridDist(i32, i32);
 
 impl GridCoord {
     fn distance_to(&self, other: &GridCoord) -> GridDist {
@@ -49,11 +64,28 @@ impl GridCoord {
         )
     }
 
-    fn add(&self, dist: GridDist) -> GridCoord {
+    fn add(&self, dist: &GridDist) -> GridCoord {
         GridCoord(
             (self.0 as i32 + dist.0) as usize,
             (self.1 as i32 + dist.1) as usize,
         )
+    }
+
+    fn at(coord: &GridCoord) -> GridCoord {
+        GridCoord(coord.0, coord.1)
+    }
+}
+
+#[derive(Eq, PartialEq, Hash, Debug)]
+struct GridDist(i32, i32);
+
+impl GridDist {
+    fn add(&self, dist: &GridDist) -> GridDist {
+        GridDist(self.0 + dist.0, self.1 + dist.1)
+    }
+
+    fn mult(&self, factor: i32) -> GridDist {
+        GridDist(self.0 * factor, self.1 * factor)
     }
 }
 
