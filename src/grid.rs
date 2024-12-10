@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
 
 #[derive(Eq, PartialEq, Hash, Debug)]
 pub struct GridPos(usize, usize);
@@ -36,12 +37,12 @@ impl GridMove {
     }
 }
 
-pub struct Grid {
-    cells: HashMap<GridPos, char>,
+pub struct Grid<T : Copy> {
+    cells: HashMap<GridPos, T>,
 }
 
-impl Grid {
-    pub fn cell_values_ignoring(&self, ignoring: char) -> HashSet<char> {
+impl<T : Copy + Eq + Hash> Grid<T> {
+    pub fn cell_values_ignoring(&self, ignoring: T) -> HashSet<T> {
         let mut seen = HashSet::new();
         self.cells.values().for_each(|c| {
             seen.insert(*c);
@@ -50,7 +51,7 @@ impl Grid {
         seen
     }
 
-    pub fn cell_positions_with(&self, cell: char) -> HashSet<&GridPos> {
+    pub fn cell_positions_with(&self, cell: T) -> HashSet<&GridPos> {
         let mut coords = HashSet::new();
         self.cells
             .keys()
@@ -65,8 +66,10 @@ impl Grid {
     pub fn contains(&self, coord: &GridPos) -> bool {
         self.cells.contains_key(coord)
     }
+}
 
-    pub fn parse_from(input: &str) -> Self {
+impl Grid<char> {
+    pub fn parse_from(input: &str) -> Grid<char> {
         let mut cells = HashMap::new();
         input.lines().enumerate().for_each(|(row, line)| {
             line.chars().enumerate().for_each(|(col, ch)| {
