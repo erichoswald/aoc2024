@@ -1,4 +1,4 @@
-use aoc2024::grid::{Grid, GridPos};
+use aoc2024::grid::Grid;
 use std::collections::HashSet;
 
 fn main() {
@@ -20,9 +20,9 @@ fn part1(sample: &str) -> usize {
         for a0 in &nodes {
             for a1 in &nodes {
                 if a0 != a1 {
-                    let dist = a0.move_to(&a1);
-                    let candidate = a1.add(&dist);
-                    if grid.contains(&candidate) {
+                    let dist = a0.move_to(*a1);
+                    let candidate = a1.add(dist);
+                    if grid.is_defined(candidate) {
                         anti_nodes.insert(candidate);
                     }
                 }
@@ -41,11 +41,11 @@ fn part2(sample: &str) -> usize {
         for a0 in &nodes {
             for a1 in &nodes {
                 if a0 != a1 {
-                    let dist = a0.move_to(&a1);
-                    let mut candidate = GridPos::at(a1);
-                    while grid.contains(&candidate) {
-                        anti_nodes.insert(GridPos::at(&candidate));
-                        candidate = candidate.add(&dist);
+                    let dist = a0.move_to(*a1);
+                    let mut candidate = *a1;
+                    while grid.is_defined(candidate) {
+                        anti_nodes.insert(candidate);
+                        candidate = candidate.add(dist);
                     }
                 }
             }

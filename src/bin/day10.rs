@@ -33,32 +33,32 @@ fn part2(input: &str) -> usize {
     ratings
 }
 
-fn mark_peaks(grid: &Grid<u32>, grid_pos: &GridPos, height: u32, peaks: &mut HashSet<GridPos>) {
-    if *grid.at(grid_pos).unwrap() == height {
+fn mark_peaks(grid: &Grid<u32>, grid_pos: GridPos, height: u32, peaks: &mut HashSet<GridPos>) {
+    if grid.at(grid_pos).unwrap() == height {
         if height < 9 {
             grid_pos
                 .neighbours_4()
                 .iter()
-                .filter(|neighbour| grid.contains(&neighbour))
+                .filter(|neighbour| grid.is_defined(**neighbour))
                 .for_each(|neighbour| {
-                    mark_peaks(grid, neighbour, height + 1, peaks)
+                    mark_peaks(grid, *neighbour, height + 1, peaks)
                 })
         } else {
-            peaks.insert(GridPos::at(grid_pos));
+            peaks.insert(grid_pos);
         }
     }
 }
 
-fn rating(grid: &Grid<u32>, grid_pos: &GridPos, height: u32) -> usize {
-    if *grid.at(grid_pos).unwrap() != height {
+fn rating(grid: &Grid<u32>, grid_pos: GridPos, height: u32) -> usize {
+    if grid.at(grid_pos).unwrap() != height {
         0
     } else if height < 9 {
         grid_pos
             .neighbours_4()
             .iter()
-            .filter(|neighbour| grid.contains(&neighbour))
+            .filter(|neighbour| grid.is_defined(**neighbour))
             .fold(0, |sum, neighbour| {
-                sum + rating(grid, neighbour, height + 1)
+                sum + rating(grid, *neighbour, height + 1)
             })
     } else {
         1

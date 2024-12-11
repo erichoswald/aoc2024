@@ -1,5 +1,5 @@
+use aoc2024::grid::{Grid, NORTH};
 use std::collections::HashSet;
-use aoc2024::grid::{Grid, GridPos, NORTH};
 
 fn main() {
     let sample = include_str!("../../inputs/sample06.txt");
@@ -18,16 +18,16 @@ fn part1(input: &str) -> usize {
             _ => None,
         }
     });
-    let mut pos = GridPos::at(obstacles.cell_positions_with('^').iter().next().unwrap());
-    obstacles.remove(&pos);
+    let mut pos = *obstacles.cell_positions_with('^').iter().next().unwrap();
+    obstacles.remove(pos);
     let mut visited = HashSet::from([ pos ]);
     let mut direction = NORTH;
     loop {
-        let next_pos = pos.add(&direction);
+        let next_pos = pos.add(direction);
         if !obstacles.is_inside(next_pos) {
             break;
         }
-        if obstacles.contains(&next_pos) {
+        if obstacles.is_defined(next_pos) {
             direction = direction.turn_right();
         } else {
             visited.insert(next_pos);
