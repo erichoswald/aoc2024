@@ -21,6 +21,10 @@ impl GridMove {
 pub struct GridPos(usize, usize);
 
 impl GridPos {
+    pub fn new(x: usize, y: usize) -> GridPos {
+        GridPos(x, y)
+    }
+
     pub fn move_to(&self, other: GridPos) -> GridMove {
         GridMove(
             other.0 as i32 - self.0 as i32,
