@@ -12,7 +12,7 @@ fn main() {
 }
 
 fn part1(input: &str) -> usize {
-    let grid = Grid::parse_and_map_from(input, |ch| ch.to_digit(10).unwrap());
+    let grid = Grid::parse_and_map_from(input, |ch| ch.to_digit(10));
     let mut score = 0;
     let trailheads = grid.cell_positions_with(0);
     for trailhead in trailheads {
@@ -24,7 +24,7 @@ fn part1(input: &str) -> usize {
 }
 
 fn part2(input: &str) -> usize {
-    let grid = Grid::parse_and_map_from(input, |ch| ch.to_digit(10).unwrap());
+    let grid = Grid::parse_and_map_from(input, |ch| ch.to_digit(10));
     let mut ratings = 0;
     let trailheads = grid.cell_positions_with(0);
     for trailhead in trailheads {

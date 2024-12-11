@@ -1,13 +1,14 @@
+use std::cmp::max;
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
 
-static NORTH: GridMove = GridMove(-1, 0);
-static SOUTH: GridMove = GridMove(1, 0);
-static WEST: GridMove = GridMove(0, -1);
-static EAST: GridMove = GridMove(0, 1);
+pub static NORTH: GridMove = GridMove(-1, 0);
+pub static SOUTH: GridMove = GridMove(1, 0);
+pub static WEST: GridMove = GridMove(0, -1);
+pub static EAST: GridMove = GridMove(0, 1);
 
-#[derive(Eq, PartialEq, Hash, Debug)]
+#[derive(Eq, PartialEq, Hash, Debug, Copy, Clone)]
 pub struct GridPos(usize, usize);
 
 impl GridPos {
@@ -39,7 +40,7 @@ impl GridPos {
     }
 }
 
-#[derive(Eq, PartialEq, Hash, Debug)]
+#[derive(Eq, PartialEq, Hash, Debug, Copy, Clone)]
 pub struct GridMove(i32, i32);
 
 impl GridMove {
@@ -50,19 +51,29 @@ impl GridMove {
     pub fn mult(&self, factor: i32) -> GridMove {
         GridMove(self.0 * factor, self.1 * factor)
     }
+
+    pub fn turn_right(&self) -> GridMove {
+        GridMove(self.1, -self.0)
+    }
 }
 
 pub struct Grid<T : Copy> {
+    row_count: usize,
+    col_count: usize,
     cells: HashMap<GridPos, T>,
 }
 
 impl <T : Copy> Grid<T> {
-    pub fn rows(&self) -> usize {
-        self.cells.keys().map(|pos| pos.0).max().unwrap() + 1
+    pub fn row_count(&self) -> usize {
+        self.row_count
     }
 
-    pub fn columns(&self) -> usize {
-        self.cells.keys().map(|pos| pos.1).max().unwrap() + 1
+    pub fn col_count(&self) -> usize {
+        self.col_count
+    }
+
+    pub fn is_inside(&self, pos: GridPos) -> bool {
+        pos.0 < self.row_count && pos.1 < self.col_count
     }
 
     pub fn contains(&self, coord: &GridPos) -> bool {
@@ -73,23 +84,41 @@ impl <T : Copy> Grid<T> {
         self.cells.get(coord)
     }
 
-    pub fn parse_and_map_from<F : Fn(char) -> T>(input: &str, transform: F) -> Grid<T> {
+    pub fn set(&mut self, pos: &GridPos, value: T) {
+        self.cells.insert(GridPos::at(pos), value);
+    }
+
+    pub fn remove(&mut self, pos: &GridPos) {
+        self.cells.remove(pos);
+    }
+
+    pub fn parse_and_map_from<F : Fn(char) -> Option<T>>(input: &str, transform: F) -> Grid<T> {
+        let mut max_row = 0;
+        let mut max_col = 0;
         let mut cells: HashMap<GridPos, T> = HashMap::new();
         input.lines().enumerate().for_each(|(row, line)| {
+            max_row = max(max_row, row);
             line.chars().enumerate().for_each(|(col, ch)| {
-                cells.insert(GridPos(row, col), transform(ch));
+                max_col = max(max_col, col);
+                let cell = transform(ch);
+                if cell.is_some() {
+                    cells.insert(GridPos(row, col), cell.unwrap());
+                }
             })
         });
-        Grid { cells }
+        Grid { row_count: max_row + 1, col_count: max_col + 1, cells }
     }
 }
 
 impl <T : Copy + Display> Display for Grid<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for row in 0..self.rows() {
-            for col in 0..self.columns() {
+        for row in 0..self.row_count() {
+            for col in 0..self.col_count() {
                 let pos = GridPos(row, col);
-                write!(f, "{}", self.cells.get(&pos).unwrap())?;
+                match self.cells.get(&pos) {
+                    Some(cell) => write!(f, "{}", *cell)?,
+                    None => write!(f, ".")?
+                }
             }
             writeln!(f)?;
         }
@@ -126,12 +155,6 @@ impl<T : Copy + Eq + Hash> Grid<T> {
 
 impl Grid<char> {
     pub fn parse_from(input: &str) -> Grid<char> {
-        let mut cells = HashMap::new();
-        input.lines().enumerate().for_each(|(row, line)| {
-            line.chars().enumerate().for_each(|(col, ch)| {
-                cells.insert(GridPos(row, col), ch);
-            })
-        });
-        Grid { cells }
+        Self::parse_and_map_from(input, |ch| Some(ch))
     }
 }
