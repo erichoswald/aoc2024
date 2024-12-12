@@ -1,4 +1,5 @@
-use std::cmp::max;
+use std::cmp::{max, Ordering};
+use std::cmp::Ordering::{Equal, Greater, Less};
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
@@ -47,8 +48,21 @@ impl GridPos {
             self.add(EAST),
         ]
     }
-}
 
+    pub fn compare(&self, other: &GridPos) -> Ordering {
+        if self.0 < other.0 {
+            Less
+        } else if self.0 > other.0 {
+            Greater
+        } else if self.1 < other.1 {
+            Less
+        } else if self.1 > other.1 {
+            Greater
+        } else {
+            Equal
+        }
+    }
+}
 
 pub struct Grid<T : Copy> {
     row_count: usize,
