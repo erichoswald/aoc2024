@@ -8,6 +8,10 @@ pub static NORTH: GridMove = GridMove(-1, 0);
 pub static SOUTH: GridMove = GridMove(1, 0);
 pub static WEST: GridMove = GridMove(0, -1);
 pub static EAST: GridMove = GridMove(0, 1);
+pub static NORTH_WEST: GridMove = GridMove(-1, -1);
+pub static NORTH_EAST: GridMove = GridMove(-1, 1);
+pub static SOUTH_WEST: GridMove = GridMove(1, -1);
+pub static SOUTH_EAST: GridMove = GridMove(1, 1);
 
 #[derive(Eq, PartialEq, Hash, Debug, Copy, Clone)]
 pub struct GridMove(i32, i32);
@@ -24,6 +28,14 @@ pub struct GridPos(usize, usize);
 impl GridPos {
     pub fn new(x: usize, y: usize) -> GridPos {
         GridPos(x, y)
+    }
+
+    pub fn row(&self) -> usize {
+        self.0
+    }
+
+    pub fn col(&self) -> usize {
+        self.1
     }
 
     pub fn move_to(&self, other: GridPos) -> GridMove {
