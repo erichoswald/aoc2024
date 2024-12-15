@@ -1,6 +1,7 @@
 use std::cmp::{max, Ordering};
 use std::cmp::Ordering::{Equal, Greater, Less};
 use std::collections::{HashMap, HashSet};
+use std::collections::hash_map::Iter;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
 
@@ -99,6 +100,10 @@ impl <T : Copy> Grid<T> {
         self.cells.contains_key(&coord)
     }
 
+    pub fn iter(&self) -> Iter<'_, GridPos, T> {
+        self.cells.iter()
+    }
+
     pub fn at(&self, coord: GridPos) -> Option<T> {
         self.cells.get(&coord).map(|&t| t)
     }
@@ -109,6 +114,10 @@ impl <T : Copy> Grid<T> {
 
     pub fn remove(&mut self, pos: GridPos) {
         self.cells.remove(&pos);
+    }
+
+    pub fn new(row_count: usize, col_count: usize) -> Grid<T> {
+        Grid { row_count, col_count, cells: HashMap::new() }
     }
 
     pub fn parse_and_map_from<F : Fn(char) -> Option<T>>(input: &str, transform: F) -> Grid<T> {
