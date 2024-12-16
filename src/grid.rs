@@ -18,6 +18,10 @@ pub static SOUTH_EAST: GridMove = GridMove(1, 1);
 pub struct GridMove(i32, i32);
 
 impl GridMove {
+    pub fn turn_left(&self) -> GridMove {
+        GridMove(-self.1, self.0)
+    }
+
     pub fn turn_right(&self) -> GridMove {
         GridMove(self.1, -self.0)
     }
