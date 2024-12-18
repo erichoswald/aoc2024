@@ -31,8 +31,8 @@ impl GridMove {
 pub struct GridPos(usize, usize);
 
 impl GridPos {
-    pub fn new(x: usize, y: usize) -> GridPos {
-        GridPos(x, y)
+    pub fn new(row: usize, col: usize) -> GridPos {
+        GridPos(row, col)
     }
 
     pub fn row(&self) -> usize {
