@@ -13,33 +13,34 @@ fn main() {
 fn solve_puzzle(input: &str) {
     let (mut patterns, designs) = parse_input(input);
     patterns.sort_unstable_by(|a, b| b.len().cmp(&a.len()));
-    let mut possible_count = 0;
-    let mut evaluated_designs = HashMap::new();
+    let mut possible_design_count = 0;
+    let mut possible_ways_count = 0;
     for design in &designs {
-        if is_design_possible(design, patterns.as_slice(), &mut evaluated_designs) {
-            possible_count += 1;
+        let possible_designs = count_possible_designs(design, patterns.as_slice(), &mut HashMap::new());
+        if possible_designs != 0 {
+            possible_design_count += 1;
         }
+        possible_ways_count += possible_designs;
     }
-    println!("Possible designs: {possible_count}");
+    println!("Possible designs: {possible_design_count}");
+    println!("Possible ways: {possible_ways_count}");
 }
 
-fn is_design_possible<'a>(design: &'a str, patterns: &[&str], evaluated_designs: &mut HashMap<&'a str, bool>) -> bool {
+fn count_possible_designs<'a>(design: &'a str, patterns: &[&str], evaluated_segments: &mut HashMap<&'a str, usize>) -> usize {
     if design.is_empty() {
-        return true;
+        return 1;
     }
-    if let Some(is_possible) = evaluated_designs.get(design) {
-        return *is_possible;
+    if let Some(possible_designs) = evaluated_segments.get(design) {
+        return *possible_designs;
     }
+    let mut count = 0;
     for pattern in patterns {
         if design.starts_with(*pattern) {
-            let is_possible = is_design_possible(&design[pattern.len()..], patterns, evaluated_designs);
-            evaluated_designs.insert(design, is_possible);
-            if is_possible {
-                return true;
-            }
+            count += count_possible_designs(&design[pattern.len()..], patterns, evaluated_segments);
         }
+        evaluated_segments.insert(design, count);
     }
-    false
+    count
 }
 
 fn parse_input(input: &str) -> (Vec<&str>, Vec<&str>) {
