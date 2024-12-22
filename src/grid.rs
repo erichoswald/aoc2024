@@ -191,6 +191,10 @@ impl<T : Copy + Eq + Hash> Grid<T> {
     pub fn cell_positions_with(&self, cell: T) -> HashSet<GridPos> {
         self.cell_positions_having(|c| cell == c)
     }
+
+    pub fn position_of(&self, cell: T) -> GridPos {
+        *self.cell_positions_with(cell).iter().next().unwrap()
+    }
 }
 
 impl Grid<char> {
