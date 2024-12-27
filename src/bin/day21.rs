@@ -1,159 +1,158 @@
 use std::collections::HashMap;
+use std::ops::Add;
+use std::vec;
+use itertools::Itertools;
+use aoc2024::grid::{Grid, GridPos, EAST, NORTH, SOUTH, WEST};
 
 fn main() {
     let sample = include_str!("../../inputs/sample21.txt");
-    println!("Sample");
-    solve(&sample);
+    println!("Part 1 (Sample)");
+    solve(&sample, 2);
 
     let input = include_str!("../../inputs/day21.txt");
-    println!("\nPuzzle");
-    solve(&input);
+    println!("Part 1");
+    solve(&input, 2);
+    println!("Part 2");
+    solve(&input, 25);
 }
 
-struct Keypad {
-    moves: HashMap<(char, char), Vec<String>>,
-}
-
-impl Keypad {
-    fn numeric() -> Self {
-        let mut keypad = Keypad { moves: HashMap::new() };
-        keypad.add_keys("A0123456789");
-        keypad.add_sequences('A', '0', &vec!["<"]);
-        keypad.add_sequences('A', '1', &vec!["^<<", "<^<"]);
-        keypad.add_sequences('A', '2', &vec!["^<", "<^"]);
-        keypad.add_sequences('A', '3', &vec!["^"]);
-        keypad.add_sequences('A', '4', &vec!["^^<<", "^<<^", "<^^<", "<^<^"]);
-        keypad.add_sequences('A', '5', &vec!["^^<", "^<^", "<^^"]);
-        keypad.add_sequences('A', '6', &vec!["^^"]);
-        keypad.add_sequences('A', '7', &vec!["^^^<<", "^^<^<", "^^<<^", "^<^^<", "^<<^^", "<^^^<", "<^<^^"]);
-        keypad.add_sequences('A', '8', &vec!["^^^<", "^^<^", "^<^^", "<^^^"]);
-        keypad.add_sequences('A', '9', &vec!["^^^"]);
-        keypad.add_sequences('0', '1', &vec!["^<"]);
-        keypad.add_sequences('0', '2', &vec!["^"]);
-        keypad.add_sequences('0', '3', &vec!["^>", ">^"]);
-        keypad.add_sequences('0', '4', &vec!["^^<", "^<^"]);
-        keypad.add_sequences('0', '5', &vec!["^^"]);
-        keypad.add_sequences('0', '6', &vec!["^^>", ">^^"]);
-        keypad.add_sequences('0', '7', &vec!["^^^<", "^^<^", "^<^^"]);
-        keypad.add_sequences('0', '8', &vec!["^^^"]);
-        keypad.add_sequences('0', '9', &vec!["^^^>", "^^>^", "^>^^", ">^^^"]);
-        keypad.add_sequences('1', '2', &vec![">"]);
-        keypad.add_sequences('1', '3', &vec![">>"]);
-        keypad.add_sequences('1', '4', &vec!["^"]);
-        keypad.add_sequences('1', '5', &vec!["^>", ">^"]);
-        keypad.add_sequences('1', '6', &vec!["^>>", ">^>", ">>^"]);
-        keypad.add_sequences('1', '7', &vec!["^^"]);
-        keypad.add_sequences('1', '7', &vec!["^^"]);
-        keypad.add_sequences('1', '8', &vec!["^^>", "^>^", ">^^"]);
-        keypad.add_sequences('1', '9', &vec!["^^>>", "^>^>", "^>>^", ">^^>", ">^>^", ">>^^"]);
-        keypad.add_sequences('2', '3', &vec![">"]);
-        keypad.add_sequences('2', '4', &vec!["^<", "<^"]);
-        keypad.add_sequences('2', '5', &vec!["^"]);
-        keypad.add_sequences('2', '6', &vec!["^>", ">^"]);
-        keypad.add_sequences('2', '7', &vec!["^^<", "^<^", "<^^"]);
-        keypad.add_sequences('2', '8', &vec!["^^"]);
-        keypad.add_sequences('2', '9', &vec!["^^>", "^>^", ">^^"]);
-        keypad.add_sequences('3', '4', &vec!["^<<", "^<^", "<<^"]);
-        keypad.add_sequences('3', '5', &vec!["^<", "<^"]);
-        keypad.add_sequences('3', '6', &vec!["^"]);
-        keypad.add_sequences('3', '7', &vec!["^^<<", "^<^<", "^<<^", "<^^<", "<^<^", "<<^^"]);
-        keypad.add_sequences('3', '8', &vec!["^^<", "^<^", "<^^"]);
-        keypad.add_sequences('3', '9', &vec!["^^"]);
-        keypad.add_sequences('4', '5', &vec![">"]);
-        keypad.add_sequences('4', '6', &vec![">>"]);
-        keypad.add_sequences('4', '7', &vec!["^"]);
-        keypad.add_sequences('4', '8', &vec!["^>", ">^"]);
-        keypad.add_sequences('4', '9', &vec!["^>>", ">^>", ">>^"]);
-        keypad.add_sequences('5', '6', &vec![">"]);
-        keypad.add_sequences('5', '7', &vec!["^<", "<^"]);
-        keypad.add_sequences('5', '8', &vec!["^"]);
-        keypad.add_sequences('5', '9', &vec!["^>", ">^"]);
-        keypad.add_sequences('6', '7', &vec!["^<<", "<^<", "<<^"]);
-        keypad.add_sequences('6', '8', &vec!["^<", "<^"]);
-        keypad.add_sequences('6', '9', &vec!["^"]);
-        keypad.add_sequences('7', '9', &vec![">>"]);
-        keypad.add_sequences('7', '8', &vec![">"]);
-        keypad.add_sequences('8', '9', &vec![">"]);
-        keypad
-    }
-
-    fn directional() -> Self {
-        let mut keypad = Keypad { moves: HashMap::new() };
-        keypad.add_keys("A^v<>");
-        keypad.add_sequences('A', '^', &vec!["<"]);
-        keypad.add_sequences('A', 'v', &vec!["<v", "v<"]);
-        keypad.add_sequences('A', '<', &vec!["v<<", "<v<"]);
-        keypad.add_sequences('A', '>', &vec!["v"]);
-        keypad.add_sequences('^', 'v', &vec!["v"]);
-        keypad.add_sequences('^', '<', &vec!["v<"]);
-        keypad.add_sequences('^', '>', &vec!["v>", ">v"]);
-        keypad.add_sequences('v', '<', &vec!["<"]);
-        keypad.add_sequences('v', '>', &vec![">"]);
-        keypad.add_sequences('<', '>', &vec![">>"]);
-        keypad
-    }
-
-    fn add_keys(&mut self, keys: &str) {
-        for key in keys.chars() {
-            self.add_sequences(key, key, &vec![""]);
-        }
-    }
-
-    fn add_sequences(&mut self, from: char, to: char, sequences: &Vec<&str>) {
-        let mut reverse_sequences = Vec::new();
-        for sequence in sequences {
-            reverse_sequences.push(sequence.chars().rev().map(|c| invert_move(c)).collect::<String>());
-        }
-        self.moves.insert((to, from), reverse_sequences);
-        self.moves.insert((from, to), sequences.iter().map(|s| s.to_string()).collect());
-    }
-
-    fn find_sequences(&self, from: char, keys: &str, path: &str, sequences: &mut Vec<String>) {
-        if let Some(to) = keys.chars().next() {
-            let moves = self.moves.get(&(from, to)).unwrap();
-            for m in moves {
-                let mut new_path = String::from(path);
-                new_path.push_str(m);
-                new_path.push('A');
-                self.find_sequences(to, &keys[1..], &new_path, sequences);
-            }
-        } else {
-            sequences.push(String::from(path));
-        }
-    }
-}
-
-fn invert_move(key: char) -> char {
-    match key {
-        '^' => 'v',
-        'v' => '^',
-        '<' => '>',
-        '>' => '<',
-        _ => panic!("Unknown movement: {key}")
-    }
-}
-
-fn solve(input: &str) {
-    let numeric = Keypad::numeric();
-    let directional = Keypad::directional();
+fn solve(input: &str, indirections: usize) {
     let mut total_complexity = 0;
     for line in input.lines() {
-        let mut s1 = Vec::new();
-        let mut sequences = Vec::new();
-        numeric.find_sequences('A', line, "", &mut sequences);
-        for sequence in sequences {
-            let mut s0 = Vec::new();
-            directional.find_sequences('A', sequence.as_str(), "", &mut s0);
-            for ss in s0 {
-                directional.find_sequences('A', ss.as_str(), "", &mut s1);
-            }
-        }
-        let length = s1.iter().map(|s| s.len()).min().unwrap();
-        total_complexity += length * numeric_part(line);
+        let shortest_sequence_length = find_shortest_sequence_length(line, indirections);
+        total_complexity += shortest_sequence_length * numeric_part(line);
     }
-    println!("{}", total_complexity);
+    println!("Total complexity: {}", total_complexity);
 }
 
 fn numeric_part(line: &str) -> usize {
     line.chars().filter(|c| c.is_numeric()).collect::<String>().parse::<usize>().unwrap()
+}
+
+fn find_shortest_sequence_length(keys: &str, indirections: usize) -> usize {
+    let numeric_keypad = new_numeric_keypad();
+    let directional_keypad = new_directional_keypad();
+    let mut cache = HashMap::new();
+    find_sequences(&numeric_keypad, keys).iter()
+        .map(|sequence| find_shortest_directional_sequence_length(&directional_keypad, indirections, sequence, &mut cache))
+        .min()
+        .unwrap()
+}
+
+fn find_shortest_directional_sequence_length(keypad: &Grid<char>, indirections: usize, sequence: &Vec<String>, cache: &mut HashMap<String, usize>) -> usize {
+    if indirections == 0 {
+        sequence.iter().map(|s| s.len()).sum()
+    } else {
+        sequence.iter().map(|keys| {
+            let cache_key = format!("{indirections}:{keys}");
+            if let Some(cached) = cache.get(&cache_key) {
+                *cached
+            } else {
+                let computed = find_sequences(keypad, keys).iter()
+                    .map(|s| find_shortest_directional_sequence_length(keypad, indirections - 1, s, cache))
+                    .min()
+                    .unwrap();
+                cache.insert(cache_key, computed);
+                computed
+            }
+        }).sum()
+    }
+}
+
+fn find_sequences(keypad: &Grid<char>, keys: &str) -> Vec<Vec<String>> {
+    let mut sequences = Vec::new();
+    let mut from = 'A';
+    for to in keys.chars() {
+        let segments = find_shortest_segments(keypad, from, to);
+        sequences.push(segments);
+        from = to;
+    }
+    combine_sequences(&sequences)
+}
+
+fn find_shortest_segments(keypad: &Grid<char>, from: char, to: char) -> Vec<String> {
+    let from_pos = keypad.position_of(from);
+    let to_pos = keypad.position_of(to);
+    let candidates = vec![(String::new(), from_pos)];
+    let mut segments = Vec::new();
+    append_shortest_segments(keypad, to_pos, &candidates, &mut segments);
+    segments
+}
+
+fn append_shortest_segments(keypad: &Grid<char>, to_pos: GridPos, candidates: &Vec<(String, GridPos)>, segments: &mut Vec<String>) {
+    let mut finishers: Vec<String> = Vec::new();
+    for (segment, pos) in candidates {
+        if *pos == to_pos {
+            let mut s = String::from(segment);
+            s.push('A');
+            finishers.push(s);
+        }
+    }
+    if !finishers.is_empty() {
+        segments.extend(finishers);
+    } else {
+        let mut next_candidates = Vec::new();
+        for (segment, pos) in candidates {
+            add_candidates(keypad, '^', pos.add(NORTH), segment, &mut next_candidates);
+            add_candidates(keypad, 'v', pos.add(SOUTH), segment, &mut next_candidates);
+            add_candidates(keypad, '<', pos.add(WEST), segment, &mut next_candidates);
+            add_candidates(keypad, '>', pos.add(EAST), segment, &mut next_candidates);
+        }
+        append_shortest_segments(keypad, to_pos, &next_candidates, segments);
+    }
+}
+
+fn add_candidates(keypad: &Grid<char>, ch: char, next_pos: GridPos, segment: &String, next_candidates: &mut Vec<(String, GridPos)>) {
+    if keypad.is_defined(next_pos) {
+        let mut next_segment = String::from(segment);
+        next_segment.push(ch);
+        next_candidates.push((next_segment, next_pos));
+    }
+}
+
+fn combine_sequences<T : Clone>(sequences: &[Vec<T>]) -> Vec<Vec<T>> {
+    match sequences {
+        [first] => {
+            first.iter().map(|s| vec![s.clone()]).collect()
+        },
+        [first, ..] => {
+            let mut result = Vec::new();
+            let tail = combine_sequences(&sequences[1..]);
+            for a in first {
+                for b in &tail {
+                    let mut s = vec![a.clone()];
+                    s.extend(b.clone());
+                    result.push(s);
+                }
+            }
+            result
+        },
+        _ => vec![]
+    }
+}
+
+fn new_numeric_keypad() -> Grid<char> {
+    let mut keypad = Grid::new(4, 3);
+    keypad.set(GridPos::new(0, 0), '7');
+    keypad.set(GridPos::new(0, 1), '8');
+    keypad.set(GridPos::new(0, 2), '9');
+    keypad.set(GridPos::new(1, 0), '4');
+    keypad.set(GridPos::new(1, 1), '5');
+    keypad.set(GridPos::new(1, 2), '6');
+    keypad.set(GridPos::new(2, 0), '1');
+    keypad.set(GridPos::new(2, 1), '2');
+    keypad.set(GridPos::new(2, 2), '3');
+    keypad.set(GridPos::new(3, 1), '0');
+    keypad.set(GridPos::new(3, 2), 'A');
+    keypad
+}
+
+fn new_directional_keypad() -> Grid<char> {
+    let mut keypad = Grid::new(2, 3);
+    keypad.set(GridPos::new(0, 1), '^');
+    keypad.set(GridPos::new(0, 2), 'A');
+    keypad.set(GridPos::new(1, 0), '<');
+    keypad.set(GridPos::new(1, 1), 'v');
+    keypad.set(GridPos::new(1, 2), '>');
+    keypad
 }
